@@ -24,14 +24,15 @@ jobs:
         with:
           python-version: 3.13.0  # specify the version you need
 
+      - name: Install system dependencies
+        run: |
+          # Install dependencies for PyGObject
+          brew install gtk+3 pango cairo harfbuzz gobject-introspection ffmpeg@5  # Added gobject-introspection and updated ffmpeg version
+
       - name: Install Python dependencies from requirements.txt
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Install system dependencies
-        run: |
-          brew install gtk+3 pango cairo harfbuzz ffmpeg@5  # Added ffmpeg@5 as specified
 
       - name: Compile Phazor
         run: |
