@@ -1,4 +1,4 @@
-name: Build macOS App & DMG
+name: Build Tauon Mac Apple Silicon App & Package DMG
 
 on:
   workflow_dispatch:  # This enables manual triggering from the GitHub Actions UI
