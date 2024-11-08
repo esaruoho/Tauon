@@ -11,5 +11,5 @@ setproctitle
 mutagen
 natsort
 PyGObject
-dbus-next
+dbus-python
 opencc
