@@ -27,7 +27,7 @@ jobs:
       - name: Install system dependencies
         run: |
           # Install dependencies for PyGObject and patchelf
-          brew install gtk+3 pango cairo harfbuzz gobject-introspection ffmpeg@5 libgme ninja autoconf  # Added missing dependencies
+          brew install gtk+3 pango cairo harfbuzz gobject-introspection ffmpeg@5 libgme ninja autoconf automake pkg-config  # Added automake and pkg-config
 
       - name: Install Python dependencies from requirements.txt
         run: |
