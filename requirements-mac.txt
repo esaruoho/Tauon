@@ -1,0 +1,15 @@
+Pillow
+pylast>=3.1.0
+PySDL2
+Send2Trash
+requests
+beautifulsoup4
+PlexAPI
+musicbrainzngs
+unidecode
+setproctitle
+mutagen
+natsort
+PyGObject
+dbus-next
+opencc
