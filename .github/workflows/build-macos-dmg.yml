@@ -24,11 +24,18 @@ jobs:
         with:
           python-version: 3.13.0  # specify the version you need
 
-      - name: Install dependencies
+      - name: Install Python dependencies from requirements.txt
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller
-          brew install gtk+3 pango cairo harfbuzz ffmpeg
+          pip install -r requirements.txt
+
+      - name: Install system dependencies
+        run: |
+          brew install gtk+3 pango cairo harfbuzz ffmpeg@5  # Added ffmpeg@5 as specified
+
+      - name: Compile Phazor
+        run: |
+          bash compile-phazor.sh  # Run the specified compilation script for Phazor
 
       - name: Build macOS app with PyInstaller
         run: |
