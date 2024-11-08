@@ -1,7 +1,7 @@
-name: Build Tauon Mac Apple Silicon App & Package DMG
+name: Tauon Apple Silicon DMG
 
 on:
-  workflow_dispatch:  # This enables manual triggering from the GitHub Actions UI
+  workflow_dispatch:  # Enables manual triggering from the GitHub Actions UI
   push:
     branches:
       - main
@@ -22,12 +22,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.13.0  # specify the version you need
+          python-version: 3.13.0  # Specify the Python version you need
 
       - name: Install system dependencies
         run: |
-          # Install dependencies for PyGObject
-          brew install gtk+3 pango cairo harfbuzz gobject-introspection ffmpeg@5  # Added gobject-introspection and updated ffmpeg version
+          # Install dependencies for PyGObject and patchelf
+          brew install gtk+3 pango cairo harfbuzz gobject-introspection ffmpeg@5 libgme ninja autoconf  # Added missing dependencies
 
       - name: Install Python dependencies from requirements.txt
         run: |
@@ -36,7 +36,8 @@ jobs:
 
       - name: Compile Phazor
         run: |
-          bash compile-phazor.sh  # Run the specified compilation script for Phazor
+          # Run the specified compilation script for Phazor
+          bash compile-phazor.sh
 
       - name: Build macOS app with PyInstaller
         run: |
