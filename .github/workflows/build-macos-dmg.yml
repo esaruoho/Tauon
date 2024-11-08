@@ -29,10 +29,10 @@ jobs:
           # Install all necessary dependencies
           brew install pygobject3 gtk+3 python pyinstaller libao sdl2 sdl2_image flac mpg123 opusfile libopenmpt libsamplerate libvorbis librsvg wavpack libgme ffmpeg@5 pango cairo harfbuzz gobject-introspection ninja autoconf automake pkg-config
 
-      - name: Install Python dependencies from requirements.txt
+      - name: Install Python dependencies from requirements-mac.txt
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements-mac.txt
 
       - name: Compile Phazor
         run: |
@@ -53,8 +53,23 @@ jobs:
           # Create a .dmg package with the updated name
           hdiutil create -volname "$APP_NAME" -srcfolder "$APP_PATH" -ov -format UDZO "$DMG_PATH"
 
-      - name: Upload DMG artifact
-        uses: actions/upload-artifact@v3
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: TauonMusicBox-dmg
-          path: dist/dmg/Tauon-macOS-AppleSilicon.dmg
+          tag_name: v1.0.0  # Adjust the tag name for versioning
+          release_name: Tauon Apple Silicon DMG
+          draft: false
+          prerelease: false
+
+      - name: Upload DMG to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/dmg/Tauon-macOS-AppleSilicon.dmg
+          asset_name: Tauon-macOS-AppleSilicon.dmg
+          asset_content_type: application/octet-stream
