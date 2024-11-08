@@ -1,6 +1,7 @@
 name: Build macOS App & DMG
 
 on:
+  workflow_dispatch:  # This enables manual triggering from the GitHub Actions UI
   push:
     branches:
       - main
