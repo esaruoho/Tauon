@@ -9,6 +9,8 @@ prefix = subprocess.run(['brew', '--prefix'], capture_output=True, text=True).st
 pango_path = prefix + '/lib/libpangocairo-1.0.0.dylib'
 harfbuzz_path = prefix + '/lib/libharfbuzz.0.dylib'
 gtk_lib_path = prefix + '/lib/*.dylib'  # Adjust for other GTK-related libraries
+sdl2_lib_path = prefix + '/lib/libSDL2.dylib'  # Path for SDL2 library
+sdl2_image_lib_path = prefix + '/lib/libSDL2_image.dylib'  # Path for SDL2_image library
 
 a = Analysis(['tauon.py'],
              binaries=[
@@ -16,10 +18,12 @@ a = Analysis(['tauon.py'],
                  (pango_path, '.'),  # Explicitly add libpangocairo
                  (harfbuzz_path, '.'),  # Explicitly add libharfbuzz
                  (gtk_lib_path, '.'),  # Add all other GTK-related dylibs
+                 (sdl2_lib_path, '.'),  # Add SDL2 library explicitly
+                 (sdl2_image_lib_path, '.'),  # Add SDL2_image library explicitly
                  (prefix + '/Cellar/ffmpeg@5', '.')
              ],
              datas=[('assets', 'assets'), ('theme', 'theme'), ('input.txt', '.')],
-             hiddenimports=['sdl2', 'pylast'],
+             hiddenimports=['sdl2', 'pylast', 'PySDL2'],  # Ensure sdl2 and PySDL2 are included
              hookspath=['extra/pyinstaller-hooks'],
              hooksconfig={},
              runtime_hooks=[],
@@ -36,7 +40,7 @@ exe = EXE(pyz,
           [],
           exclude_binaries=True,
           name='Tauon Music Box',
-          debug=False,
+          debug=True,  # Enable debug for detailed error output
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
@@ -65,7 +69,7 @@ app = BUNDLE(coll,
                     'LANG': 'en_US.UTF-8',
                     'LC_CTYPE': 'en_US.UTF-8',
                     # Set DYLD_LIBRARY_PATH to ensure the app can locate dynamic libraries
-                    'DYLD_LIBRARY_PATH': prefix + '/lib'
+                    'DYLD_LIBRARY_PATH': f"{prefix}/lib:{prefix}/opt/sdl2/lib:{prefix}/opt/sdl2_image/lib"
                 }
              }
              )
