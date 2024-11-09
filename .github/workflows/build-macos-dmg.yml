@@ -1,75 +1,76 @@
-# -*- mode: python ; coding: utf-8 -*-
+name: Tauon Apple Silicon DMG
 
-block_cipher = None
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-import subprocess
-prefix = subprocess.run(['brew', '--prefix'], capture_output=True, text=True).stdout.strip()
+jobs:
+  build:
+    runs-on: macos-latest
 
-# Specify paths for required libraries explicitly
-pango_path = prefix + '/lib/libpangocairo-1.0.0.dylib'
-harfbuzz_path = prefix + '/lib/libharfbuzz.0.dylib'
-gtk_lib_path = prefix + '/lib/*.dylib'
-sdl2_lib_path = prefix + '/lib/libSDL2.dylib'  # Path for SDL2 library
-sdl2_image_lib_path = prefix + '/lib/libSDL2_image.dylib'  # Path for SDL2_image library
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
-a = Analysis(['tauon.py'],
-             binaries=[
-                 ('lib/libphazor.so', 'lib/'),
-                 (pango_path, '.'),  # Explicitly add libpangocairo
-                 (harfbuzz_path, '.'),  # Explicitly add libharfbuzz
-                 (gtk_lib_path, '.'),  # Add all other GTK-related dylibs
-                 (sdl2_lib_path, '.'),  # Add SDL2 library explicitly
-                 (sdl2_image_lib_path, '.'),  # Add SDL2_image library explicitly
-                 (prefix + '/Cellar/ffmpeg@5', '.')
-             ],
-             datas=[('assets', 'assets'), ('theme', 'theme'), ('input.txt', '.')],
-             hiddenimports=['sdl2', 'pylast', 'PySDL2'],  # Ensure sdl2 and PySDL2 are included
-             hookspath=['extra/pyinstaller-hooks'],
-             hooksconfig={},
-             runtime_hooks=[],
-             excludes=[],
-             win_no_prefer_redirects=False,
-             win_private_assemblies=False,
-             cipher=block_cipher,
-             noarchive=False)
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.13.0
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+      - name: Install system dependencies
+        run: |
+          brew install pygobject3 gtk+3 python pyinstaller libao sdl2 sdl2_image flac mpg123 opusfile libopenmpt libsamplerate libvorbis librsvg wavpack libgme ffmpeg@5 pango cairo harfbuzz gobject-introspection ninja autoconf automake pkg-config
 
-exe = EXE(pyz,
-          a.scripts, 
-          [],
-          exclude_binaries=True,
-          name='Tauon Music Box',
-          debug=True,  # Enable debug for detailed error output
-          bootloader_ignore_signals=False,
-          strip=False,
-          upx=True,
-          console=False,
-          disable_windowed_traceback=False,
-          target_arch=None,
-          codesign_identity=None,
-          entitlements_file=None,
-          icon='assets/tau-mac.icns')
+      - name: Install Python dependencies from requirements-mac.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-mac.txt
 
-coll = COLLECT(exe,
-               a.binaries,
-               a.zipfiles,
-               a.datas, 
-               strip=False,
-               upx=True,
-               upx_exclude=[],
-               name='TauonMusicBox')
+      - name: Compile Phazor
+        run: |
+          bash compile-phazor.sh
 
-app = BUNDLE(coll,
-             name='TauonMusicBox.app',
-             icon='assets/tau-mac.icns',
-             bundle_identifier=None,
-             info_plist={
-                'LSEnvironment': {
-                    'LANG': 'en_US.UTF-8',
-                    'LC_CTYPE': 'en_US.UTF-8',
-                    # Set DYLD_LIBRARY_PATH to ensure the app can locate dynamic libraries
-                    'DYLD_LIBRARY_PATH': f"{prefix}/lib:{prefix}/opt/sdl2/lib:{prefix}/opt/sdl2_image/lib"
-                }
-             }
-             )
+      - name: Build macOS app with PyInstaller
+        run: |
+          pyinstaller mac.spec --clean --noconfirm
+
+      - name: Create DMG
+        run: |
+          mkdir -p dist/dmg
+          APP_NAME="TauonMusicBox"
+          APP_PATH="dist/${APP_NAME}.app"
+          DMG_PATH="dist/dmg/Tauon-macOS-AppleSilicon.dmg"
+          hdiutil create -volname "$APP_NAME" -srcfolder "$APP_PATH" -ov -format UDZO "$DMG_PATH"
+
+      - name: Set Release Tag with Date and Time
+        id: date_tag
+        run: |
+          echo "TAG_NAME=v1.0.0-$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: Tauon Apple Silicon DMG
+          draft: false
+          prerelease: false
+
+      - name: Upload DMG to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/dmg/Tauon-macOS-AppleSilicon.dmg
+          asset_name: Tauon-macOS-AppleSilicon.dmg
+          asset_content_type: application/octet-stream
