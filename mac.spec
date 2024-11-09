@@ -23,7 +23,7 @@ a = Analysis(['tauon.py'],
                  (prefix + '/Cellar/ffmpeg@5', '.')
              ],
              datas=[('assets', 'assets'), ('theme', 'theme'), ('input.txt', '.')],
-             hiddenimports=['sdl2', 'pylast', 'PySDL2'],  # Ensure sdl2 and PySDL2 are included
+             hiddenimports=['sdl2', 'sdl2.sdlimage', 'pylast', 'PySDL2']
              hookspath=['extra/pyinstaller-hooks'],
              hooksconfig={},
              runtime_hooks=[],
