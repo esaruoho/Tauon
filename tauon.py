@@ -24,6 +24,9 @@ import sys
 from ctypes import pointer
 from gi.repository import GLib
 
+if pyinstaller_mode:
+    os.environ["PYSDL2_DLL_PATH"] = sys._MEIPASS
+
 if sys.platform != 'win32':
     import fcntl
 
