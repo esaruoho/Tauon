@@ -8,7 +8,7 @@ prefix = subprocess.run(['brew', '--prefix'], capture_output=True, text=True).st
 # Specify paths for required libraries explicitly
 pango_path = prefix + '/lib/libpangocairo-1.0.0.dylib'
 harfbuzz_path = prefix + '/lib/libharfbuzz.0.dylib'
-gtk_lib_path = prefix + '/lib/*.dylib'  # Adjust for other GTK-related libraries
+gtk_lib_path = prefix + '/lib/*.dylib'
 sdl2_lib_path = prefix + '/lib/libSDL2.dylib'  # Path for SDL2 library
 sdl2_image_lib_path = prefix + '/lib/libSDL2_image.dylib'  # Path for SDL2_image library
 
